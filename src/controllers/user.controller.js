@@ -20,9 +20,9 @@ const generateAccessandRefreshToken = async(UserId) => {
         //console.log('Access Token:', accessToken)
         //console.log('Refresh Token:', refreshToken)
         
-        if (!accessToken || !refreshToken) {
-            throw new ApiError(500, "Token generation failed - tokens are undefined")
-        }
+        // if (!accessToken || !refreshToken) {
+        //     throw new ApiError(500, "Token generation failed - tokens are undefined")
+        // }
 
         user.refreshToken = refreshToken
         await user.save({ validateBeforeSave: false })
@@ -231,8 +231,8 @@ const refreshAccessToken = asyncHandler( async(req, res) => {
 
 const changeCurrentPassword = asyncHandler( async(req,res) => {
     const {oldpassword, newpassword} = req.body
-    const user = User.findById(req.user?.id)
-    const isPasswordCorrect = await user.isPasswordCorrect(oldpassword)
+    const user = await User.findById(req.user?._id)
+    const isPasswordCorrect = user.isPasswordCorrect(oldpassword)
     if(!isPasswordCorrect){
         throw new ApiError(400,"enterd password is incorrect")
     }
@@ -246,7 +246,7 @@ const changeCurrentPassword = asyncHandler( async(req,res) => {
 const getCurrentUser = asyncHandler(async(req, res) => {
     return res
     .status(200)
-    .json(200, req.user, "current user fetched successfully")
+    .json(new ApiResponse(200, req.user, "current user fetched successfully"))
 })
 
 const updateAccountDetails = asyncHandler(async(req, res) => {
@@ -255,7 +255,7 @@ const updateAccountDetails = asyncHandler(async(req, res) => {
         throw new ApiError(400, "All fields are required")
     }
 
-    const user = User.findByIdAndUpdate(
+    const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
             $set: {
@@ -374,7 +374,7 @@ const getUserChannelInfo = asyncHandler(async(req, res) => {
                     $cond: {
                         if: {$in: [req.user?._id,"$subscribers.subscriber"]},
                         then: true,
-                        else: true
+                        else: false
                     }
                 }
             }
@@ -383,6 +383,7 @@ const getUserChannelInfo = asyncHandler(async(req, res) => {
             $project: {
                 fullName: 1,
                 username: 1,
+                subscribercount: 1,
                 channelsSubscribedToCount: 1,
                 isSubscribed: 1,
                 avatar: 1,
