@@ -14,9 +14,15 @@ const createPlaylist = asyncHandler(async (req, res) => {
 
     const { videoIds } = req.body
     
-    if(!mongoose.isValidObjectId(videoIds)) {
-        throw new ApiError(400, "invalid video id ")
+    if (!Array.isArray(videoIds) || videoIds.length === 0) {
+        throw new ApiError(400, "videoIds must be a non-empty array");
     }
+
+    const invalidId = videoIds.find(id => !mongoose.isValidObjectId(id));
+    if (invalidId) {
+        throw new ApiError(400, `invalid video id: ${invalidId}`);
+    }
+
 
     const validvideo = await Video.find({
         _id: {$in: videoIds},
@@ -102,11 +108,11 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
 const getPlaylistById = asyncHandler(async (req, res) => {
     const {playlistId} = req.params
     //TODO: get playlist by id
-    if(!isValidObjectId(id)) {
+    if(!isValidObjectId(playlistId)) {
         throw new ApiError(400, "invalidid for getting playlist")
     }
 
-    const playlist = Playlist.findById(playlistId)
+    const playlist = await Playlist.findById(playlistId)
 
     return res
     .status(201)
@@ -228,12 +234,12 @@ const updatePlaylist = asyncHandler(async (req, res) => {
 
 })
 
-export default {
+export {
     createPlaylist,
     getUserPlaylists,
     getPlaylistById,
     addVideoToPlaylist,
     removeVideoFromPlaylist,
     deletePlaylist,
-
+    updatePlaylist
 }

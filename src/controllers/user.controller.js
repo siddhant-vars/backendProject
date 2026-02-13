@@ -259,7 +259,7 @@ const updateAccountDetails = asyncHandler(async(req, res) => {
         req.user?._id,
         {
             $set: {
-                fullName,
+                fullName: fullName,
                 email: email
             }
         },
@@ -298,7 +298,7 @@ const updateUserAvatar = asyncHandler(async(req, res) => {
         {new: true}
     ).select("-password")
 
-    return req
+    return res
     .status(200)
     .json( new ApiResponse(200, user, "Avatra file updated scussfully"))
 
@@ -327,7 +327,7 @@ const updateUserCoverImage = asyncHandler(async(req, res) => {
         {new: true}
     ).select("-password")
 
-    return req
+    return res
     .status(200)
     .json( new ApiResponse(200, user, "CoverImage file updated scussfully"))
 
